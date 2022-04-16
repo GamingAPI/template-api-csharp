@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x' # SDK Version to use.
+          source-url: https://nuget.pkg.github.com/GamingAPI/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GH_TOKEN}}
+      - name: Install dependencies
+        run: dotnet restore
+      - run: dotnet build --configuration Release AsyncapiNatsClient
+      - name: Create the package
+        run: dotnet pack --configuration Release AsyncapiNatsClient
+      - name: Publish the package to GitHub registry
+        run: dotnet nuget push AsyncapiNatsClient/bin/Release/*.nupkg --api-key ${{secrets.GH_TOKEN}}
