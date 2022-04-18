@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-ignore_files=".git|node_modules|_templates|customize|README.md"
+# https://formulae.brew.sh/formula/tree
+command -v tree >/dev/null 2>&1 || { echo >&2 "I require tree but it's not installed. Aborting."; exit 1; }
+# https://formulae.brew.sh/formula/gomplate
+command -v gomplate >/dev/null 2>&1 || { echo >&2 "I require gomplate but it's not installed. Aborting."; exit 1; }
+
+ignore_files=".git|_templates|customize|README.md"
 
 for input_file in `tree -I "${ignore_files}" -Ffai --noreport`
 do
@@ -20,3 +25,5 @@ rm README.md
 # mv README_TEMPLATE.md README.md
 mv github .github
 rm customize
+rm customize.json
+
