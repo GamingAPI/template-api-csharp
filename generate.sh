@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# Cleanup potential old files
+[ -d "./definitions" ] && rm -rf ./definitions
+[ -d "./tooling" ] && rm -rf ./tooling
+
+# Initial setup of variables
 library_last_version="0.0.0"
 template_last_version="0.0.0"
 template_current_version="0.0.0"
@@ -16,18 +21,11 @@ major_version_change="false"
 minor_version_change="false"
 patch_version_change="false"
 commit_message=""
-
 document_last_version=$(cat ./configs.json | jq -r '.document_last_version')
 template_last_version=$(cat ./configs.json | jq -r '.template_last_version')
-
-[ -d "./definitions" ] && rm -rf ./definitions
-[ -d "./tooling" ] && rm -rf ./tooling
-
 template_current_version=$(curl -sL https://api.github.com/repos/asyncapi/dotnet-nats-template/releases/latest | jq -r '.tag_name' | sed 's/v//')
-
 git clone https://github.com/GamingAPI/definitions.git definitions
 document_current_version=$(cat ./definitions/bundled/rust.asyncapi.json | jq -r '.info.version' | sed 's/v//')
-
 if [ -f "./AsyncapiNatsClient/AsyncapiNatsClient.csproj" ]; then
   if ! command -v xml-to-json &> /dev/null
   then
@@ -39,16 +37,16 @@ if [ -f "./AsyncapiNatsClient/AsyncapiNatsClient.csproj" ]; then
 else
   library_last_version="0.0.0"
 fi
-
+## Split semver version by '.'
 semver_template_last_version=( ${template_last_version//./ } )
 major_template_last_version=${semver_template_last_version[0]}
 minor_template_last_version=${semver_template_last_version[1]}
 patch_template_last_version=${semver_template_last_version[2]}
+## Split semver version by '.'
 semver_template_current_version=( ${template_current_version//./ } )
 major_template_current_version=${semver_template_current_version[0]}
 minor_template_current_version=${semver_template_current_version[1]}
 patch_template_current_version=${semver_template_current_version[2]}
-
 if (($major_template_current_version > $major_template_last_version)); then
   major_version_change="true"
   commit_message="${commit_message}Template have changed to a new major version."
@@ -59,16 +57,16 @@ elif (($patch_template_current_version > $patch_template_last_version)) && (($mi
   patch_version_change="true"
   commit_message="${commit_message}Template have changed to a new patch version."
 fi
-
+## Split semver version by '.'
 semver_document_last_version=( ${document_last_version//./ } )
 major_document_last_version=${semver_document_last_version[0]}
 minor_document_last_version=${semver_document_last_version[1]}
 patch_document_last_version=${semver_document_last_version[2]}
+## Split semver version by '.'
 semver_document_current_version=( ${document_current_version//./ } )
 major_document_current_version=${semver_document_current_version[0]}
 minor_document_current_version=${semver_document_current_version[1]}
 patch_document_current_version=${semver_document_current_version[2]}
-
 if (($major_document_current_version > $major_document_last_version)); then
   major_version_change="true"
   commit_message="${commit_message}AsyncAPI document have changed to a new major version."
@@ -81,27 +79,27 @@ elif (($patch_document_current_version > $patch_document_last_version && $minor_
 fi
 
 if $major_version_change == 'true' || $minor_version_change == 'true' || $patch_version_change == 'true'; then
-  # Remove previous files to ensure clean slate
+  # Remove previous generated files to ensure clean slate
   find . -not \( -name configs.json -or -name .gitignore -or -name LICENSE -or -name generate.sh -or -iwholename *.github* -or -iwholename *./definitions* -or -iwholename *.git* -or -name . \) -exec rm -rf {} +
 
-  # Generating client from the AsyncAPI document
   if ! command -v ag &> /dev/null
   then
     npm install -g @asyncapi/generator
   fi
-
+  # Generating new code from the AsyncAPI document
   ag --force-write --output ./ ./definitions/bundled/rust.asyncapi.json @asyncapi/dotnet-nats-template -p version="$library_last_version"
 
   # Write new config file to ensure we keep the new state for next time
   contents="$(jq ".template_last_version = \"$template_current_version\" | .document_last_version = \"$document_current_version\"" configs.json)" && echo "${contents}" > configs.json
-  rm -rf ./definitions
-
 fi
 mkdir -p ./.github/variables
+
 echo "
 major_version_change="$major_version_change"
 minor_version_change="$minor_version_change"
 patch_version_change="$patch_version_change"
 " > ./.github/variables/generator.env
+
+# Cleanup
 rm -rf ./definitions
 rm -rf ./tooling
