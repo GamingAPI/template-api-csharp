@@ -25,7 +25,7 @@ document_last_version=$(cat ./configs.json | jq -r '.document_last_version')
 template_last_version=$(cat ./configs.json | jq -r '.template_last_version')
 template_current_version=$(curl -sL https://api.github.com/repos/asyncapi/dotnet-nats-template/releases/latest | jq -r '.tag_name' | sed 's/v//')
 git clone https://github.com/GamingAPI/definitions.git definitions
-document_current_version=$(cat ./definitions/bundled/rust.asyncapi.json | jq -r '.info.version' | sed 's/v//')
+document_current_version=$(cat ./definitions/bundled/<<[ .cus.ASYNCAPI_FILE ]>> | jq -r '.info.version' | sed 's/v//')
 if [ -f "./AsyncapiNatsClient/AsyncapiNatsClient.csproj" ]; then
   if ! command -v xml-to-json &> /dev/null
   then
@@ -87,7 +87,7 @@ if $major_version_change == 'true' || $minor_version_change == 'true' || $patch_
     npm install -g @asyncapi/generator
   fi
   # Generating new code from the AsyncAPI document
-  ag --force-write --output ./ ./definitions/bundled/rust.asyncapi.json @asyncapi/dotnet-nats-template -p version="$library_last_version"
+  ag --force-write --output ./ ./definitions/bundled/<<[ .cus.ASYNCAPI_FILE ]>> @asyncapi/dotnet-nats-template -p version="$library_last_version"
 
   # Write new config file to ensure we keep the new state for next time
   contents="$(jq ".template_last_version = \"$template_current_version\" | .document_last_version = \"$document_current_version\"" configs.json)" && echo "${contents}" > configs.json
