@@ -102,7 +102,7 @@ if $major_version_change == 'true' || $minor_version_change == 'true' || $patch_
     npm install -g @asyncapi/generator
   fi
   # Generating new code from the AsyncAPI document
-  ag --force-write --output ./ ${url_to_asyncapi_document} https://github.com/jonaslagoni/dotnet-nats-template@master -p version="$library_last_version" -p targetFramework="netstandard2.0;netstandard2.1;net461" -p repositoryUrl="${repository_url}" -p projectName="${libary_name}"
+  ag --force-write --output ./ ${url_to_asyncapi_document} https://github.com/jonaslagoni/dotnet-nats-template -p version="$library_last_version" -p targetFramework="netstandard2.0;netstandard2.1;net461" -p repositoryUrl="${repository_url}" -p projectName="${libary_name}"
 
   # Write new config file to ensure we keep the new state for next time
   contents="$(jq ".template_last_version = \"$template_current_version\" | .document_last_version = \"$document_current_version\"" configs.json)" && echo "${contents}" > configs.json
@@ -110,10 +110,10 @@ fi
 mkdir -p ./.github/variables
 
 echo "
-major_version_change="$major_version_change"
-minor_version_change="$minor_version_change"
-patch_version_change="$patch_version_change"
-commit_message="$commit_message"
+major_version_change=\"$major_version_change\"
+minor_version_change=\"$minor_version_change\"
+patch_version_change=\"$patch_version_change\"
+commit_message=\"$commit_message\"
 " > ./.github/variables/generator.env
 
 # Cleanup
