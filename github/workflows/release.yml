@@ -1,5 +1,9 @@
 name: Release
 
+env:
+  GH_USER: jonaslagoni
+  GH_EMAIL: <jonas-lt@live.dk>
+
 on:
   push:
     branches:
