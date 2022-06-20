@@ -8,6 +8,7 @@ These are the supported placeholders:
 ```
 ASYNCAPI_FILE='rust.asyncapi.json'
 LIBRARY_NAME='RustGameAPI'
+repository_name=''
 ```
 
 ## Required secrets for workflow
