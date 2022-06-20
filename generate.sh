@@ -27,7 +27,7 @@ url_to_asyncapi_document="https://raw.githubusercontent.com/GamingAPI/definition
 template_current_version=$(curl -sL https://api.github.com/repos/jonaslagoni/dotnet-nats-template/releases/latest | jq -r '.tag_name' | sed 's/v//')
 document_current_version=$(curl -sL ${url_to_asyncapi_document} | jq -r '.info.version' | sed 's/v//')
 
-f [ -f "./${libary_name}/${libary_name}.csproj" ]; then
+if [ -f "./${libary_name}/${libary_name}.csproj" ]; then
   if ! command -v xml-to-json &> /dev/null
   then
     git clone https://github.com/tyleradams/json-toolkit.git tooling
