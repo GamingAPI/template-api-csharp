@@ -7,8 +7,16 @@ Placeholder syntax is `<<[ .cus.foo ]>>`
 These are the supported placeholders:
 ```
 ASYNCAPI_FILE='rust.asyncapi.json'
+LIBRARY_NAME='RustGameAPI'
 ```
 
 ## Required secrets for workflow
 
 - NUGET_AUTH_TOKEN
+
+
+## Example imploding
+
+```
+./customize -c cus=./customize.json
+```
