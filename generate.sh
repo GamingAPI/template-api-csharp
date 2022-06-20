@@ -24,8 +24,9 @@ patch_version_change="false"
 commit_message=""
 document_last_version=$(cat ./configs.json | jq -r '.document_last_version')
 template_last_version=$(cat ./configs.json | jq -r '.template_last_version')
+template_to_use="jonaslagoni/dotnet-nats-template"
+template_current_version=$(curl -sL https://raw.githubusercontent.com/${template_to_use}/master/package.json | jq -r '.version' | sed 's/v//')
 url_to_asyncapi_document="https://raw.githubusercontent.com/GamingAPI/definitions/main/bundled/<<[ .cus.ASYNCAPI_FILE ]>>"
-template_current_version=$(curl -sL https://api.github.com/repos/jonaslagoni/dotnet-nats-template/releases/latest | jq -r '.tag_name' | sed 's/v//')
 document_current_version=$(curl -sL ${url_to_asyncapi_document} | jq -r '.info.version' | sed 's/v//')
 
 if [ -f "./${libary_name}/${libary_name}.csproj" ]; then
@@ -102,7 +103,7 @@ if $major_version_change == 'true' || $minor_version_change == 'true' || $patch_
     npm install -g @asyncapi/generator
   fi
   # Generating new code from the AsyncAPI document
-  ag --force-write --output ./ ${url_to_asyncapi_document} https://github.com/jonaslagoni/dotnet-nats-template -p version="$library_last_version" -p targetFramework="netstandard2.0;netstandard2.1;net461" -p repositoryUrl="${repository_url}" -p projectName="${libary_name}"
+  ag --force-write --output ./ ${url_to_asyncapi_document} https://github.com/${template_to_use} -p version="${library_last_version}" -p targetFramework="netstandard2.0;netstandard2.1;net461" -p repositoryUrl="${repository_url}" -p projectName="${libary_name}"
 
   # Write new config file to ensure we keep the new state for next time
   contents="$(jq ".template_last_version = \"$template_current_version\" | .document_last_version = \"$document_current_version\"" configs.json)" && echo "${contents}" > configs.json
